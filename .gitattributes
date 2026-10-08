@@ -12,3 +12,6 @@
 # CIF structure files: two legacy files are stored with CRLF; -text freezes
 # normalization so renormalize/checkout never rewrites them (zero churn)
 *.cif -text
+
+# Published scientific downloads must retain their exact source bytes and hashes.
+web/snapshot/** -text -whitespace
