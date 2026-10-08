@@ -3,11 +3,13 @@ import os
 import re
 import signal
 import subprocess
+import sys
 import time
 from pathlib import Path
 
 import psutil
 
+from .cpu import compute_cpus
 from .persistence import now
 
 
@@ -77,7 +79,12 @@ def execute(
                 log.write(f"[{now()}] {line}\n".encode())
             log.flush()
         process = subprocess.Popen(
-            command,
+            [
+                sys.executable,
+                str(Path(__file__).with_name("cpu.py")),
+                ",".join(map(str, compute_cpus())),
+                *command,
+            ],
             cwd=directory,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

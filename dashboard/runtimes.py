@@ -8,6 +8,7 @@ import subprocess
 from pathlib import Path
 
 from .config import ROOT
+from .cpu import compute_cpus
 
 GIB = 1024**3
 
@@ -95,6 +96,8 @@ class Runtimes:
             str(memory_bytes),
             "--cpus",
             str(cpus),
+            "--cpuset-cpus",
+            ",".join(map(str, compute_cpus())),
         ]
 
     def verify(self):

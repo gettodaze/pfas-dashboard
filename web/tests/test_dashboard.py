@@ -1,3 +1,5 @@
+import json
+import os
 import sys
 import threading
 import time
@@ -8,6 +10,7 @@ from fastapi.testclient import TestClient
 
 from dashboard.candidates import TFA, load
 from dashboard.config import Config
+from dashboard.cpu import compute_cpus
 from dashboard.export import export
 from dashboard.persistence import now
 from dashboard.processes import evidence, execute, tail
@@ -119,6 +122,7 @@ def test_process_timeout_cancel_and_tail(tmp_path):
         threading.Event(),
         0.1,
     )
+
     assert state == "failed" and error == "Timed out" and code != 0
     event = threading.Event()
     event.set()
@@ -130,6 +134,68 @@ def test_process_timeout_cancel_and_tail(tmp_path):
     )
     (tmp_path / "stdout.log").write_text("x" * 30000)
     assert len(tail(tmp_path / "stdout.log")) == 16000
+
+
+@pytest.mark.skipif(not hasattr(os, "sched_getaffinity"), reason="Linux affinity")
+def test_job_cpu_affinity_and_priority_are_inherited(tmp_path):
+    allowed = sorted(os.sched_getaffinity(0))
+    expected = allowed[1:] if len(allowed) > 1 else allowed
+    original_priority = os.getpriority(os.PRIO_PROCESS, 0)
+    code = (
+        "import json, os, subprocess, sys; "
+        "print(json.dumps({'cpus': sorted(os.sched_getaffinity(0)), "
+        "'nice': os.getpriority(os.PRIO_PROCESS, 0)})); "
+        "subprocess.run([sys.executable, '-c', "
+        "'import os; print(sorted(os.sched_getaffinity(0)))'], check=True)"
+    )
+    _, state, _ = execute([sys.executable, "-c", code], tmp_path, threading.Event())
+    assert state == "succeeded"
+    output = (tmp_path / "stdout.log").read_text()
+    report = next(
+        json.loads(line[line.index("{") :])
+        for line in output.splitlines()
+        if "{" in line
+    )
+    assert report == {"cpus": expected, "nice": min(19, original_priority + 10)}
+    assert str(expected) in output
+    assert sorted(os.sched_getaffinity(0)) == allowed
+
+
+def test_cpu_reservation_keeps_single_cpu_usable(monkeypatch):
+    monkeypatch.setattr("dashboard.cpu.os.sched_getaffinity", lambda _: {5})
+    assert compute_cpus() == [5]
+
+
+@pytest.mark.timeout(8)
+def test_web_requests_continue_during_cpu_bound_job(tmp_path, monkeypatch):
+    app = create_app(Config(artifacts=tmp_path / "artifacts"))
+    manager = app.state.manager
+    started = threading.Event()
+    # Keep this regression test cheap even on large hosts.
+    monkeypatch.setattr("dashboard.processes.compute_cpus", lambda: compute_cpus()[:1])
+
+    def run(task, cancel):
+        _, status, _ = execute(
+            [sys.executable, "-c", "while True: pass"],
+            manager.config.artifacts / task["id"],
+            cancel,
+            timeout=5,
+            on_start=lambda _: started.set(),
+        )
+        manager.store.update(task["id"], status=status)
+
+    monkeypatch.setattr(manager, "run", run)
+    with TestClient(app) as client:
+        task = manager.queue("diagram", "500")
+        assert started.wait(2)
+        for _ in range(5):
+            start = time.monotonic()
+            response = client.get("/api/queue")
+            assert response.status_code == 200
+            assert time.monotonic() - start < 1
+            assert manager.store.get(task["id"])["status"] == "running"
+            time.sleep(0.1)
+        manager.cancel_task(task["id"])
 
 
 def test_timestamped_logs_preserve_output_and_ram_markers(tmp_path):

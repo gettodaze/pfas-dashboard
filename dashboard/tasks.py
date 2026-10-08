@@ -11,6 +11,7 @@ import uuid
 from pathlib import Path
 
 from .batches import Batches, validate_positive
+from .cpu import compute_cpus
 from .inputs import discover, dry_input, ram_reports, validate_references
 from .persistence import Store, now
 from .preparation import digest, pseudo_names
@@ -44,22 +45,13 @@ class Manager:
                 "paused": False,
                 "concurrency": 1,
                 "memory_bytes": min(8 * GIB, memory_ceiling() * 9 // 10),
-                "cpus": min(
-                    4,
-                    len(os.sched_getaffinity(0))
-                    if hasattr(os, "sched_getaffinity")
-                    else os.cpu_count() or 1,
-                ),
+                "cpus": min(4, len(compute_cpus())),
             }
         )
         self.settings["memory_bytes"] = min(
             self.settings["memory_bytes"], memory_ceiling() * 9 // 10
         )
-        available_cpus = (
-            len(os.sched_getaffinity(0))
-            if hasattr(os, "sched_getaffinity")
-            else os.cpu_count() or 1
-        )
+        available_cpus = len(compute_cpus())
         self.settings["cpus"] = min(self.settings["cpus"], available_cpus)
         self.thread = threading.Thread(target=self.worker, daemon=True)
 
@@ -504,13 +496,12 @@ class Manager:
             validate_positive(settings["concurrency"], "Concurrency", integer=True)
             validate_positive(settings["cpus"], "CPU budget", integer=True)
             validate_positive(settings["memory_bytes"], "Memory budget", integer=True)
-            available_cpus = (
-                len(os.sched_getaffinity(0))
-                if hasattr(os, "sched_getaffinity")
-                else os.cpu_count() or 1
-            )
+            available_cpus = len(compute_cpus())
             if settings["cpus"] > available_cpus:
-                raise ValueError("CPU budget exceeds available CPUs")
+                raise ValueError(
+                    f"CPU budget cannot exceed {available_cpus}; "
+                    "one CPU is reserved for web requests on multicore hosts"
+                )
             memory_limit = memory_ceiling() * 9 // 10
             if settings["memory_bytes"] > memory_limit:
                 raise ValueError(
@@ -575,6 +566,7 @@ class Manager:
         )
         return {
             "settings": self.settings,
+            "cpu_capacity": len(compute_cpus()),
             "runtimes": self.runtimes.availability(),
             "batches": self.store.batches(),
             "tasks": [{k: t[k] for k in keys if k in t} for t in tasks],
@@ -598,6 +590,15 @@ class Manager:
                             "resources",
                             {"cpus": task["processes"], "memory_bytes": 4 * GIB},
                         )
+                        if resources["cpus"] > len(compute_cpus()):
+                            self.store.update(
+                                task["id"],
+                                status="failed",
+                                ended=now(),
+                                error="Job CPU count exceeds compute capacity after "
+                                "reserving a CPU for web requests; retry with fewer CPUs",
+                            )
+                            continue
                         running_tasks = [value[2] for value in self.running.values()]
                         if runtime == "native" and running_tasks:
                             break

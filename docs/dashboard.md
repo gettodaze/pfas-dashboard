@@ -363,7 +363,15 @@ Default container limits are **4 GiB/job**, **no additional swap**, and **one
 concurrent job**. Once a container preview verifies enforcement, increase
 **Maximum container jobs** on the queue page if desired. Defaults are an **8 GiB
 total reservation budget**, reduced to 90% of the detected memory ceiling on
-smaller hosts, and at most **four available CPUs**. A job must fit both budgets;
+smaller hosts, and at most **four compute CPUs**. On multicore hosts, one CPU
+from the server's allowed affinity set is excluded from all job processes,
+including container jobs, to leave capacity for web requests. The maximum
+compute budget is therefore seven CPUs on an eight-CPU host. Jobs also run at
+lower scheduling priority (nice +10); single-CPU hosts share their CPU with the
+server using this priority. This reserves capacity, not a hard response-time
+guarantee. Saved budgets are capped on restart; waiting jobs that exceed the
+new compute capacity fail with an instruction to retry with fewer CPUs.
+A job must fit both budgets;
 start order remains FIFO even when later smaller jobs could fit. Native work
 never overlaps any other job. Container reservations use limits, not current
 usage. The total memory budget can use up to 90% of detected host memory; other processes

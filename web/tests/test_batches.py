@@ -260,6 +260,7 @@ def test_container_missing_and_image_changed_do_not_fallback(
 
 
 def test_container_argv_and_no_host_mpi(manager, monkeypatch, tmp_path):
+    monkeypatch.setattr("dashboard.runtimes.compute_cpus", lambda: [2, 4, 6])
     manager.config.image = tmp_path / "image.sif"
     manager.config.image.write_bytes(b"image")
     monkeypatch.setattr(
@@ -279,6 +280,38 @@ def test_container_argv_and_no_host_mpi(manager, monkeypatch, tmp_path):
     )
     assert command[-6:] == ["mpirun", "-np", "2", "pw.x", "-in", "input.in"]
     assert "--pid" in command and "--cleanenv" in command
+    assert command[command.index("--cpuset-cpus") + 1] == "2,4,6"
+
+
+def test_cpu_reservation_caps_saved_budget_and_rejects_full_host(manager, monkeypatch):
+    monkeypatch.setattr("dashboard.cpu.os.sched_getaffinity", lambda _: set(range(8)))
+    manager.store.set_settings({**manager.settings, "cpus": 8})
+    restarted = Manager(manager.config, manager.candidates)
+    try:
+        assert restarted.settings["cpus"] == 7
+        assert restarted.queue_data()["cpu_capacity"] == 7
+        with pytest.raises(ValueError, match="reserved for web requests"):
+            restarted.configure({"cpus": 8})
+        assert restarted.configure({"cpus": 7})["cpus"] == 7
+    finally:
+        restarted.close()
+
+
+def test_oversized_waiting_job_fails_instead_of_blocking_queue(manager, monkeypatch):
+    manager.configure({"cpus": 2})
+    batch = submit(manager, request(["500"], processes=2))
+    task = manager.store.get(batch["task_ids"][0])
+    manager.store.update(task["id"], resources={**task["resources"], "cpus": 2})
+    monkeypatch.setattr("dashboard.tasks.compute_cpus", lambda: [1])
+    restarted = Manager(manager.config, manager.candidates)
+    try:
+        restarted.start()
+        wait_tasks(restarted)
+        task = restarted.store.get(task["id"])
+        assert task["status"] == "failed"
+        assert "retry with fewer CPUs" in task["error"]
+    finally:
+        restarted.close()
 
 
 def test_api_cancel_running_batch(manager, monkeypatch, tmp_path):

@@ -26,9 +26,11 @@ export function GeometryViewer({
   geometries: Record<string, Geometry>;
 }) {
   const systems = Object.keys(geometries);
-  const [selected, setSelected] = useState(systems[0]);
+  const [selected, setSelected] = useState(
+    systems.includes("complex") ? "complex" : systems[0],
+  );
   const [rotation, setRotation] = useState([0.25, -0.3]);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(1.25);
   const canvas = useRef<HTMLCanvasElement>(null);
   const drag = useRef<number[] | null>(null);
   const geometry = geometries[selected] || geometries[systems[0]];
@@ -135,7 +137,7 @@ export function GeometryViewer({
     URL.revokeObjectURL(url);
   }
   return (
-    <section>
+    <section className="geometry-viewer">
       <h3>Initial geometry</h3>
       <p>
         Starting coordinates from the selected input, in Å. Drag to rotate; use
@@ -149,7 +151,7 @@ export function GeometryViewer({
             value={selected}
             onChange={(e) => {
               setSelected(e.target.value);
-              setZoom(1);
+              setZoom(1.25);
             }}
           >
             {systems.map((s) => (
@@ -172,7 +174,7 @@ export function GeometryViewer({
         <button
           onClick={() => {
             setRotation([0.25, -0.3]);
-            setZoom(1);
+            setZoom(1.25);
           }}
         >
           Reset view

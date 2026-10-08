@@ -90,9 +90,11 @@ function App() {
       <main
         aria-busy={busy}
         className={
-          !candidate && !["tasks", "advanced-search", "queue"].includes(hash)
-            ? "candidate-page"
-            : undefined
+          candidate
+            ? "candidate-detail-page"
+            : !["tasks", "advanced-search", "queue"].includes(hash)
+              ? "candidate-page"
+              : undefined
         }
       >
         {error && (

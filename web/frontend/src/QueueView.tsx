@@ -136,12 +136,13 @@ export function QueueView() {
           />
         </label>
         <label>
-          Total CPU budget{" "}
+          Compute CPU budget{" "}
           <input
             type="number"
             min="1"
             step="1"
             value={cpus}
+            max={data.cpu_capacity}
             onChange={(e) => setCPUs(e.target.value)}
           />
         </label>
@@ -152,7 +153,8 @@ export function QueueView() {
             !Number.isInteger(Number(concurrency)) ||
             Number(concurrency) < 1 ||
             !Number.isInteger(Number(cpus)) ||
-            Number(cpus) < 1
+            Number(cpus) < 1 ||
+            Number(cpus) > data.cpu_capacity
           }
           onClick={() =>
             mutate("queue/settings", {
@@ -166,6 +168,8 @@ export function QueueView() {
         </button>
       </div>
       <p>
+        Compute capacity: {data.cpu_capacity} CPU(s). One CPU stays available
+        for web requests on multicore hosts; jobs use lower scheduling priority.
         Native jobs stay serial. Parallel container jobs must fit both budgets.
         Pause lets running jobs finish. Clear queue cancels all waiting jobs and
         keeps job history.
