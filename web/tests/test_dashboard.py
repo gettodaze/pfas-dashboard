@@ -415,6 +415,9 @@ def test_export_builds_snapshot_without_replacing_live_frontend(tmp_path, monkey
     live.write_text("live build")
     output = tmp_path / "public"
     monkeypatch.setattr(launcher, "ROOT", tmp_path)
+    (output / "snapshot").mkdir(parents=True)
+    (output / "snapshot/removed.in").write_text("old scientific file")
+    (output / "old-bundle.js").write_text("old frontend bundle")
     monkeypatch.setattr(sys, "argv", ["dashboard", "export", "--output", str(output)])
     calls = []
 
@@ -435,6 +438,8 @@ def test_export_builds_snapshot_without_replacing_live_frontend(tmp_path, monkey
     assert live.read_text() == "live build"
     assert (output / "index.html").read_text() == "snapshot build"
     assert (output / "snapshot/data.json").is_file()
+    assert not (output / "snapshot/removed.in").exists()
+    assert not (output / "old-bundle.js").exists()
 
 
 def test_restart_preserves_queue_order_and_pause(manager, monkeypatch):

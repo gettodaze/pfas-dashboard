@@ -247,3 +247,16 @@ test("AG Grid comparator keeps unavailable values last despite descending invers
   assert.equal(numericValue(undefined), null);
   assert.equal(numericValue("0"), 0);
 });
+
+test("snapshot preserves exported RAM without estimate task records", () => {
+  const row = candidate();
+  row.fields.candidate_ram_per_process_gib = "2.5";
+  row.fields.complex_ram_per_process_gib = "4";
+  const [result] = withTaskFields([row], [], true);
+  assert.equal(result.fields.candidate_ram_per_process_gib, "2.5");
+  assert.equal(result.fields.complex_ram_per_process_gib, "4");
+  assert.equal(
+    withTaskFields([row], [])[0].fields.candidate_ram_per_process_gib,
+    "",
+  );
+});

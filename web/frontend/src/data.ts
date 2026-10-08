@@ -20,6 +20,20 @@ export type InputVersion = {
   candidate: string;
   system: string;
   label: string;
+  artifacts?: Record<string, string>;
+  input_assets?: Record<string, InputAsset>;
+  geometry?: Geometry;
+};
+export type InputAsset = {
+  url: string;
+  sha256: string;
+  dependency_error?: string;
+  pseudopotentials: {
+    name: string;
+    sha256: string | null;
+    status: "available" | "missing";
+    url?: string;
+  }[];
 };
 export type RAMValue = { value: string; unit: string; bytes: number };
 export type Task = {
@@ -50,6 +64,7 @@ export type Task = {
   error?: string;
   command?: string[];
   artifacts: Record<string, string>;
+  input_assets?: Record<string, InputAsset>;
   stdout_tail?: string;
   stderr_tail?: string;
   evidence?: {
@@ -62,6 +77,7 @@ export type Task = {
   };
 };
 export type Data = {
+  asset_index?: string;
   input_versions?: InputVersion[];
   mode: "live" | "snapshot";
   queue?: { settings: QueueSettings; runtimes: RuntimeInfo };

@@ -56,7 +56,14 @@ function App() {
   const browsingData = useMemo(
     () =>
       data
-        ? { ...data, candidates: withTaskFields(data.candidates, data.tasks) }
+        ? {
+            ...data,
+            candidates: withTaskFields(
+              data.candidates,
+              data.tasks,
+              data.mode === "snapshot",
+            ),
+          }
         : null,
     [data],
   );

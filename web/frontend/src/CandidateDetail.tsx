@@ -4,6 +4,7 @@ import { PubChemLink } from "./PubChemLink";
 import { TaskHistory } from "./TaskHistory";
 import { GeometryViewer } from "./GeometryViewer";
 import { RunControls } from "./RunControls";
+import { InputDependencies } from "./InputDependencies";
 export function CandidateDetail({
   candidate,
   tasks,
@@ -199,34 +200,63 @@ export function CandidateDetail({
       )}
       {prepared && (
         <section>
-          <h3>Prepared inputs</h3>
+          <h3>Prepared inputs and structures</h3>
           {Object.entries(prepared.artifacts)
             .filter(
               ([n]) =>
-                n.endsWith(".in") && (candidate.id !== "tfa" || n === "tfa.in"),
+                /\.(in|png|cif|mol|xyz)$/i.test(n) &&
+                (candidate.id !== "tfa" || n.startsWith("tfa.")),
             )
             .map(([name, url]) => (
               <div key={name}>
-                <a href={url} download>
+                <a href={url} download={name}>
                   {name}
                 </a>{" "}
-                <button
-                  onClick={async () => {
-                    try {
-                      const r = await fetch(url);
-                      if (!r.ok) throw Error("Input unavailable");
-                      setInput(await r.text());
-                    } catch (e) {
-                      setError(String(e));
-                    }
-                  }}
-                >
-                  View input
-                </button>
+                {name.endsWith(".in") && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const r = await fetch(url);
+                        if (!r.ok) throw Error("Input unavailable");
+                        setInput(await r.text());
+                      } catch (e) {
+                        setError(String(e));
+                      }
+                    }}
+                  >
+                    View input
+                  </button>
+                )}
+                <InputDependencies asset={prepared.input_assets?.[name]} />
               </div>
             ))}
           {error && <p className="error">{error}</p>}
           {input && <pre>{input}</pre>}
+        </section>
+      )}
+      {!live && (
+        <section>
+          <h3>External input versions</h3>
+          {!versions?.some((v) => v.candidate === candidate.id) && (
+            <p>No external input versions available.</p>
+          )}
+          {versions
+            ?.filter((v) => v.candidate === candidate.id)
+            .map((version) => (
+              <article key={version.input_id}>
+                <p>
+                  {version.system} · {version.label}
+                </p>
+                {Object.entries(version.artifacts || {}).map(([name, url]) => (
+                  <div key={name}>
+                    <a href={url} download={name}>
+                      {name}
+                    </a>
+                    <InputDependencies asset={version.input_assets?.[name]} />
+                  </div>
+                ))}
+              </article>
+            ))}
         </section>
       )}
       {live &&

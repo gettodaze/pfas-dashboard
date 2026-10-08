@@ -8,6 +8,7 @@ export const ramFields: Record<string, string> = {
 export function withTaskFields(
   candidates: Candidate[],
   tasks: Task[],
+  snapshot = false,
 ): Candidate[] {
   const summaries = new Map<string, NonNullable<Candidate["task_summary"]>>();
   // Do not depend on API or snapshot task ordering. A failed retry never erases a success.
@@ -34,6 +35,7 @@ export function withTaskFields(
     const summary = summaries.get(candidate.id) || { ram: {} };
     const fields = { ...candidate.fields };
     for (const system of ["candidate", "complex"]) {
+      if (snapshot) continue;
       const estimate = summary.ram[system]?.ram_estimate;
       const value = estimate?.per_process;
       fields[`${system}_ram_per_process_gib`] =

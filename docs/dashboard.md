@@ -197,16 +197,40 @@ uv run --no-default-groups --group web python -m dashboard export
 Export does not trigger chemistry or QE. It builds the frontend, writes committed
 public data under `web/snapshot/`, and assembles the static site under ignored
 `web/public/` (use `--output` to change the assembled-site destination). Commit the
-snapshot data to update the public dashboard. Only summary JSON, existing
-successful diagrams, prepared coordinates, and selected result metadata are exported. Raw logs,
-databases, machine paths, scratch files, credentials, and mutation controls are
-excluded. The UI shows the export timestamp and local launch instructions.
+snapshot data to update the public dashboard. The export includes every available
+task-root `.in`, PNG, CIF, MOL, and XYZ file, plus external input versions. Files
+are grouped by candidate and task, preserving their exact bytes. Attempts without
+scientific files are omitted. RAM fields are saved from the latest successful
+single-process estimate for each candidate/system, independent of task history.
+
+`web/snapshot/asset-index.json` records SHA-256 hashes and maps each input to
+its required pseudopotentials. Immutable run copies take precedence; historical
+hashes must match before a download is offered. UPFs are stored once per unique
+content hash, preserving different versions with the same filename. Missing
+pseudopotentials are marked unavailable. Logs, local databases, requests, QE
+scratch/output directories, and container images stay local. Each export rebuilds
+the snapshot and assembled site cleanly, so removed files disappear. The UI shows the export timestamp and local launch instructions.
 
 The `dashboard.yml` workflow tests the backend, builds the frontend, copies
 **committed** snapshot data, and deploys to GitHub Pages on main or manual dispatch.
 Configure the repository Pages source as GitHub Actions. Publication depends on
 that repository setting. Assets and snapshot requests are relative; candidate
-links use hashes and work under `/pfas-environment-cleanup/` without server routing.
+links use hashes and work under the fork’s `/pfas-dashboard/` path without server routing.
+
+For this fork, export the main checkout’s storage explicitly:
+
+```bash
+PFAS_ARTIFACTS="../pfas-environment-cleanup/.dashboard" \
+PFAS_PSEUDOS="../pfas-environment-cleanup/qespresso_pipeline/Pseudopotentials" \
+PFAS_QE_INPUTS="../pfas-environment-cleanup/qe_inputs" \
+uv run --locked --no-default-groups --group web python -m dashboard export
+git add dashboard web/frontend/src web/frontend/tests web/tests docs/dashboard.md .gitignore web/snapshot
+git commit -m "Update dashboard scientific snapshot"
+git push origin main
+```
+
+The workflow publishes committed files; future calculations continue locally.
+Download links and geometry interaction use static files and need no local API.
 
 ## Validation
 
@@ -419,7 +443,8 @@ do not populate the candidate's Est RAM value. Estimates do not contribute energ
 convergence evidence and do not adjust memory limits. A missing per-process
 report or QE error fails the estimate; cancellation and timeout remain failures
 or canceled attempts. Snapshot exports retain version labels, hashes, and
-estimates while omitting local paths and raw inputs.
+the exact run inputs, while omitting local paths and logs. Candidate RAM values
+are extracted into the static candidate data.
 
 Run the opt-in native estimate smoke check with
 `PFAS_RAM_SMOKE=1 .venv/bin/python -m pytest web/tests/test_ram_smoke.py -o session_timeout=180`.

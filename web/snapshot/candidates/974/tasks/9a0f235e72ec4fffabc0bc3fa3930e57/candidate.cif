@@ -1,0 +1,47 @@
+# generated using pymatgen
+data_H9C9BrO2
+_symmetry_space_group_name_H-M   'P 1'
+_cell_length_a   18.75580000
+_cell_length_b   17.68690000
+_cell_length_c   17.53510000
+_cell_angle_alpha   90.00000000
+_cell_angle_beta   90.00000000
+_cell_angle_gamma   90.00000000
+_symmetry_Int_Tables_number   1
+_chemical_formula_structural   H9C9BrO2
+_chemical_formula_sum   'H9 C9 Br1 O2'
+_cell_volume   5816.95307461
+_cell_formula_units_Z   1
+loop_
+ _symmetry_equiv_pos_site_id
+ _symmetry_equiv_pos_as_xyz
+  1  'x, y, z'
+loop_
+ _atom_site_type_symbol
+ _atom_site_label
+ _atom_site_symmetry_multiplicity
+ _atom_site_fract_x
+ _atom_site_fract_y
+ _atom_site_fract_z
+ _atom_site_occupancy
+  C  C0  1  0.36842470  0.61405334  0.43822961  1
+  C  C1  1  0.38817859  0.53908825  0.40353348  1
+  O  O2  1  0.31990104  0.55124414  0.43814407  1
+  C  C3  1  0.43521471  0.48450548  0.44468523  1
+  O  O4  1  0.50769895  0.49956182  0.42335658  1
+  C  C5  1  0.55142942  0.50265451  0.48584268  1
+  C  C6  1  0.57137525  0.57436860  0.51144847  1
+  C  C7  1  0.61737702  0.58174129  0.57351826  1
+  C  C8  1  0.64400879  0.51741685  0.60964580  1
+  C  C9  1  0.62505998  0.44562925  0.58337848  1
+  C  C10  1  0.57918084  0.43808129  0.52102925  1
+  Br  Br11  1  0.55803538  0.33923412  0.48593393  1
+  H  H12  1  0.35676964  0.66076588  0.40029427  1
+  H  H13  1  0.39193210  0.63011042  0.49224698  1
+  H  H14  1  0.39058318  0.53366616  0.34217085  1
+  H  H15  1  0.42192815  0.42710707  0.42604833  1
+  H  H16  1  0.42655605  0.48776213  0.50657253  1
+  H  H17  1  0.55122149  0.62453002  0.48287150  1
+  H  H18  1  0.63281225  0.63760184  0.59346112  1
+  H  H19  1  0.68009896  0.52311032  0.65782915  1
+  H  H20  1  0.64682392  0.39595407  0.61150492  1

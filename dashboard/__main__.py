@@ -29,6 +29,9 @@ def main():
             or output == ROOT / "web/snapshot"
             or output in ROOT.parents
             or output == ROOT
+            or output == Config().artifacts
+            or Config().artifacts.is_relative_to(output)
+            or output.is_symlink()
         ):
             parser.error("Export destination must be a separate site directory")
         with TemporaryDirectory(prefix="pfas-snapshot-build-") as build:
@@ -39,6 +42,8 @@ def main():
                 env={**os.environ, "PFAS_DATA_MODE": "snapshot"},
             )
             export(Config(), ROOT / "web/snapshot")
+            if output.exists():
+                shutil.rmtree(output)
             shutil.copytree(build, output, dirs_exist_ok=True)
         shutil.copytree(ROOT / "web/snapshot", output / "snapshot", dirs_exist_ok=True)
         print(f"Snapshot site exported to {output}; no tasks started")

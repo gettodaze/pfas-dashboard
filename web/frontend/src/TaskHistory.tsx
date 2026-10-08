@@ -1,4 +1,5 @@
 import { Task, Action } from "./data";
+import { InputDependencies } from "./InputDependencies";
 export function TaskHistory({
   tasks,
   live,
@@ -93,9 +94,12 @@ export function TaskHistory({
               </p>
             )}
           {Object.entries(t.artifacts).map(([name, url]) => (
-            <a className="download" key={name} href={url} download>
-              {name}
-            </a>
+            <div key={name}>
+              <a className="download" href={url} download={name}>
+                {name === "input.in" ? "Executed input.in" : name}
+              </a>
+              <InputDependencies asset={t.input_assets?.[name]} />
+            </div>
           ))}
           {live && (
             <details>
