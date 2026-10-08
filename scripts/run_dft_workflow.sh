@@ -6,13 +6,15 @@ echo "[job] host: $(hostname)"
 echo "[job] pwd: $(pwd)"
 
 if command -v module &> /dev/null; then
-    module load anaconda3
     # Pin Quantum ESPRESSO to the native 7.3 build verified on PACE-ICE.
     # The unpinned default can resolve to a container-based build whose
     # pw.x fails under "mpirun -np ... pw.x", and loading openmpi after
     # an unpinned QE load can silently swap in a different build.
+    module purge
+    module load anaconda3
+    module load gcc/12.3.0
+    module load openmpi/4.1.5
     module load quantum-espresso/7.3
-    module load openmpi
 fi
 
 if command -v conda &> /dev/null; then
@@ -52,8 +54,7 @@ if [[ ! -d "$ENV_PREFIX" ]]; then
     echo "[env] creating env at $ENV_PREFIX from $ENV_YAML"
     conda env create -p "$ENV_PREFIX" -f "$ENV_YAML"
 else
-    echo "[env] updating env at $ENV_PREFIX from $ENV_YAML"
-    conda env update -p "$ENV_PREFIX" -f "$ENV_YAML" --prune
+    conda activate qe_pfas
 fi
 
 echo "[env] python:"

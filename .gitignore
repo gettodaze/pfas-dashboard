@@ -1,6 +1,7 @@
 .DS_Store
 data/*.csv
 models/*.joblib
+.vscode
 
 # Workflow outputs (QE runs are large and machine-local)
 dft_cases/
@@ -11,4 +12,17 @@ logs/
 __pycache__/
 .env-pfas-ci/
 # keep the one legacy tracked cache dir visible (do not untrack committed files)
-!qespresso_pipeline/__pycache__/
+# !qespresso_pipeline/__pycache__/
+
+# Dashboard local state; public exports are committed separately.
+.dashboard/
+web/.venv/
+web/frontend/node_modules/
+web/frontend/dist/
+web/frontend/*.tsbuildinfo
+web/public/
+web/snapshot
+
+# Local container images
+*.sif
+.container-build/

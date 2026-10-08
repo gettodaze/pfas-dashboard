@@ -3,6 +3,9 @@ name = "pfas-materials-discovery"
 version = "0.1.0"
 description = "PFAS materials discovery workflows and Quantum ESPRESSO orchestration"
 requires-python = ">=3.12,<3.13"
+dependencies = [
+    "visidata>=3.4",
+]
 
 [dependency-groups]
 dev = [
@@ -10,6 +13,19 @@ dev = [
     "pytest-timeout",
     "ruff",
     "ty",
+    "httpx",
+]
+
+web = [
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.30,<1",
+    "psutil>=7,<8",
+    "rdkit>=2024.9,<2027",
+]
+
+preparation = [
+    { include-group = "chemistry" },
+    { include-group = "qe" },
 ]
 
 chemistry = [
@@ -40,6 +56,9 @@ default-groups = "all"
 [tool.ruff]
 target-version = "py312"
 
+[tool.ty.environment]
+extra-paths = ["qespresso_pipeline"]
+
 [tool.ty.src]
 exclude = [
     "shivani_ml_models/gnn.py",
@@ -47,6 +66,8 @@ exclude = [
 ]
 
 [tool.pytest.ini_options]
+testpaths = ["tests", "web/tests"]
+pythonpath = ["."]
 timeout = 2
 session_timeout = 60
 markers = [

@@ -1,0 +1,27 @@
+{
+  "name": "pfas-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "format": "prettier --write src tests vite.config.js tsconfig.json package.json index.html",
+    "format:check": "prettier --check src tests vite.config.js tsconfig.json package.json index.html",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "ag-grid-community": "36.2.0",
+    "ag-grid-react": "36.2.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "prettier": "3.6.2",
+    "typescript": "5.7.2",
+    "vite": "5.4.21"
+  }
+}

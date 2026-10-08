@@ -1,0 +1,30 @@
+---------------------------------------
+Begin Slurm Prolog: Sep-22-2026 04:34:33
+Job ID:    5898260
+User ID:   ryu98
+Account:   coc
+Job name:  pfas_screen
+Partition: ice-cpu
+QOS:       coc-ice
+---------------------------------------
+[job] starting at Tue Sep 22 04:34:33 EDT 2026
+[job] host: atl1-1-02-003-19-2.pace.gatech.edu
+[job] pwd: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts
+[env] python:
+Python 3.10.21
+
+/home/hice1/ryu98/.conda/envs/qe_pfas/bin/python
+
+---------------------------------------
+Begin Slurm Epilog: Sep-22-2026 05:13:01
+Job ID:        5898260
+Array Job ID:  5898218_23
+User ID:       ryu98
+Account:       coc
+Job name:      pfas_screen
+Resources:     cpu=4,mem=192G,node=1
+Rsrc Used:     cput=02:33:52,vmem=0,walltime=00:38:28,mem=15021840K,energy_used=0
+Partition:     ice-cpu
+QOS:           coc-ice
+Nodes:         atl1-1-02-003-19-2
+---------------------------------------

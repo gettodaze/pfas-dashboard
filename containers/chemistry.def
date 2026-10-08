@@ -1,0 +1,66 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+%files
+    pyproject.toml /opt/pfas/pyproject.toml
+    uv.lock /opt/pfas/uv.lock
+    containers/qe-smoke.sh /opt/pfas-image/qe-smoke.sh
+    qespresso_pipeline/Pseudopotentials/H.UPF /opt/pfas-image/H.UPF
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get install -y --no-install-recommends python3 python3-dev python3-venv python3-pip \
+        build-essential swig pkg-config libopenbabel-dev openbabel \
+        gfortran libopenmpi-dev openmpi-bin libblas-dev liblapack-dev libfftw3-dev \
+        git curl ca-certificates
+    mkdir -p /opt/qe/bin /opt/pfas-image
+    qe_source_dir=$(mktemp -d /tmp/pfas-qe-source.XXXXXX)
+    trap 'rm -rf "$qe_source_dir"' EXIT
+    git clone --depth 1 --branch qe-7.6 https://github.com/QEF/q-e.git "$qe_source_dir"
+    cd "$qe_source_dir"
+    test "$(git rev-parse HEAD)" = 9f93ddec427d2b9a45bb72d828c6d324f62fcabd
+    git rev-parse HEAD > /opt/pfas-image/qe-source-commit.txt
+    git submodule update --init --depth 1 external/fox external/devxlib
+    ./configure MPIF90=mpif90 CC=mpicc F90=gfortran --enable-parallel \
+        --with-scalapack=no --with-hdf5=no
+    # Fail rather than silently accepting configure's serial fallback.
+    grep -q -- '-D__MPI' make.inc
+    make -j2 pw
+    install -m 755 PW/src/pw.x /opt/qe/bin/pw.x
+    cp make.inc /opt/pfas-image/qe-make.inc
+    cd /
+    rm -rf "$qe_source_dir"
+    export PATH=/opt/qe/bin:/opt/venv/bin:/usr/bin:/bin
+    python3 -m venv /opt/bootstrap
+    /opt/bootstrap/bin/pip install uv==0.12.17
+    cd /opt/pfas
+    UV_PROJECT_ENVIRONMENT=/opt/venv /opt/bootstrap/bin/uv sync --locked \
+        --no-default-groups --group web --group preparation --no-install-project
+    /opt/venv/bin/python -c 'import rdkit,pymatgen.core,ase,openbabel'
+    /opt/venv/bin/obabel -V
+    command -v pw.x
+    command -v mpirun
+    mkdir -p /opt/pfas-image
+    dpkg-query -W > /opt/pfas-image/system-packages.txt
+    /opt/bootstrap/bin/uv pip freeze --python /opt/venv/bin/python > /opt/pfas-image/python-packages.txt
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+%environment
+    export PATH=/opt/qe/bin:/opt/venv/bin:/usr/bin:/bin
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+    export MKL_NUM_THREADS=1
+    export NUMEXPR_NUM_THREADS=1
+
+%test
+    /opt/venv/bin/python -c 'import rdkit,pymatgen.core,ase,openbabel'
+    cif2cell --version
+    /bin/sh /opt/pfas-image/qe-smoke.sh
+
+%labels
+    Description PFAS preparation and local Quantum ESPRESSO runtime
+    Python 3.12
+    QuantumESPRESSO 7.6
+    MPI OpenMPI

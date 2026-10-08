@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=pfas_screen
-#SBATCH --output=logs/screen_%A_%a.out
+#SBATCH --output=logs/simple_screen_%A_%a.out
 #SBATCH --nodes=1
 #SBATCH --ntasks=4
 #SBATCH --time=18:00:00
-#SBATCH --mem=64G
-#SBATCH --array=2-101  # one task per CSV data row: 101 = 1 header + 100 data rows (IDs 001-100); update if the CSV changes
+#SBATCH --mem=192G
+#SBATCH --array=2-26  # one task per CSV data row: 101 = 1 header + 100 data rows (IDs 001-100); update if the CSV changes
 # Explicit PACE-ICE scheduling values verified on the cluster (account coc,
 # qos coc-ice, partition ice-cpu). Each array task runs one adsorption case
 # with a single pw.x at a time, so 4 tasks and 64 GB match the per-case
@@ -16,7 +16,7 @@
 #SBATCH --account=coc
 #SBATCH --qos=coc-ice
 
-CSV_FILE="molecular_adsorbents_smiles.csv"
+CSV_FILE="simple_adsorbents.csv"
 
 # CSV header: ID,Name,SMILES,Category. Parse with python's csv module because
 # several fields are quoted and contain commas (e.g. row 045's Name), which

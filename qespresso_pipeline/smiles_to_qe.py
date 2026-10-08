@@ -75,26 +75,36 @@ def run_obabel(
     for ff, use_conformer in ladder:
         if output_mol.exists():
             output_mol.unlink()  # stale output from a failed rung must not mask the next attempt
+
         command = _obabel_command(input_string, output_mol, ff, use_conformer)
         print(f"[info] obabel rung: {_label(ff, use_conformer)}")
+
         try:
+            # We must catch both standard exit codes and actual system crashes
             subprocess.run(command, check=True)
         except subprocess.CalledProcessError as e:
             if e.returncode is not None and e.returncode < 0:
-                detail = f"killed by signal {-e.returncode} (crash)"
+                detail = f"killed by signal {-e.returncode} (crash/segfault)"
+                print(
+                    f"[warn] Open Babel crashed (SIGSEGV) on {_label(ff, use_conformer)}. Forcing basic gen3d fallback.",
+                    file=sys.stderr,
+                )
             else:
                 detail = f"exit code {e.returncode}"
+
             print(
                 f"[warn] obabel failed ({_label(ff, use_conformer)}): {detail}; trying next rung",
                 file=sys.stderr,
             )
             last_error = e
             continue
+
         if output_mol.exists() and output_mol.stat().st_size > 0:
             print(
                 f"[info] MOL created: {output_mol} (rung: {_label(ff, use_conformer)})"
             )
             return output_mol
+
         print(
             f"[warn] obabel rung {_label(ff, use_conformer)} produced no MOL output; trying next rung",
             file=sys.stderr,
@@ -117,6 +127,9 @@ def mol_to_cif_pymatgen(
     input_mol: Path, output_name: str, padding: float = 12.0
 ) -> Path:
     output_cif = Path(f"{output_name}.cif")
+    # Register MOL readers before filename-based discovery (pymatgen-core 2026.8.30).
+    import pymatgen.io.babel  # noqa: F401
+
     print(f"[info] Creating CIF from MOL: {output_cif}")
 
     mol = Molecule.from_file(str(input_mol))

@@ -1,0 +1,96 @@
+---------------------------------------
+Begin Slurm Prolog: Sep-22-2026 04:33:33
+Job ID:    5898244
+User ID:   ryu98
+Account:   coc
+Job name:  pfas_screen
+Partition: ice-cpu
+QOS:       coc-ice
+---------------------------------------
+[job] starting at Tue Sep 22 04:33:33 EDT 2026
+[job] host: atl1-1-01-005-3-2.pace.gatech.edu
+[job] pwd: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts
+[env] python:
+Python 3.10.21
+
+/home/hice1/ryu98/.conda/envs/qe_pfas/bin/python
+
+[warn] Open Babel crashed (SIGSEGV) on MMFF94 + conformer. Forcing basic gen3d fallback.
+[warn] obabel failed (MMFF94 + conformer): killed by signal 11 (crash/segfault); trying next rung
+[warn] Open Babel crashed (SIGSEGV) on UFF + conformer. Forcing basic gen3d fallback.
+[warn] obabel failed (UFF + conformer): killed by signal 11 (crash/segfault); trying next rung
+1 molecule converted
+[warn] Open Babel crashed (SIGSEGV) on MMFF94 + conformer. Forcing basic gen3d fallback.
+[warn] obabel failed (MMFF94 + conformer): killed by signal 11 (crash/segfault); trying next rung
+[warn] Open Babel crashed (SIGSEGV) on UFF + conformer. Forcing basic gen3d fallback.
+[warn] obabel failed (UFF + conformer): killed by signal 11 (crash/segfault); trying next rung
+1 molecule converted
+Traceback (most recent call last):
+  File "/home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/qespresso_pipeline/run_adsorption_case.py", line 490, in <module>
+    main()
+  File "/home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/qespresso_pipeline/run_adsorption_case.py", line 442, in main
+    ads_out = run_pwscf(ads_in, args.pw_command)
+  File "/home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/qespresso_pipeline/run_adsorption_case.py", line 102, in run_pwscf
+    with open(output_path, "w") as f_out, open(stderr_path, "w") as f_err:
+OSError: [Errno 122] Disk quota exceeded
+
+ERROR conda.cli.main_run:execute(124): `conda run python qespresso_pipeline/run_adsorption_case.py --case-name Hydroquinone_TFA --adsorbent-name Hydroquinone --pfas-name TFA --adsorbent-source smiles --system-type molecule --mode production --compound-root /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds --workdir /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/dft_cases --pseudo-dir /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/qespresso_pipeline/Pseudopotentials --pw-command mpirun -np 4 pw.x --adsorbent-smiles Oc1ccc(O)cc1 --pfas-smiles FC(F)(F)C(=O)O` failed. (See above for error)
+Initial conformer does not pass filter!
+Initial conformer count: 0
+30000 attempts,  0 duplicates, 30000 failed filter.
+
+=====> Starting conformers search with a Genetic Algorithm <=====
+Perform elitist generation replacement with mutation only
+Mutation probability: 0.2
+Will stop after 5 generations without improvement.
+
+The current score is not a number, will not continue.
+
+GetConformers:
+Initial conformer does not pass filter!
+Initial conformer count: 0
+30000 attempts,  0 duplicates, 30000 failed filter.
+
+=====> Starting conformers search with a Genetic Algorithm <=====
+Perform elitist generation replacement with mutation only
+Mutation probability: 0.2
+Will stop after 5 generations without improvement.
+
+The current score is not a number, will not continue.
+
+GetConformers:
+[info] Creating MOL: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/adsorbents/Hydroquinone/adsorbent.mol
+[info] obabel rung: MMFF94 + conformer
+[info] obabel rung: UFF + conformer
+[info] obabel rung: no-ff + gen3d-only
+[info] MOL created: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/adsorbents/Hydroquinone/adsorbent.mol (rung: no-ff + gen3d-only)
+[info] Creating CIF from MOL: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/adsorbents/Hydroquinone/adsorbent.cif
+[info] CIF created: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/adsorbents/Hydroquinone/adsorbent.cif (box = [18.1762 16.3293 12.011 ])
+[info] Creating QE input: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/adsorbents/Hydroquinone/adsorbent.in
+[info] Patched QE input: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/adsorbents/Hydroquinone/adsorbent.in
+[info] Creating MOL: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/pfas/TFA/pfas.mol
+[info] obabel rung: MMFF94 + conformer
+[info] obabel rung: UFF + conformer
+[info] obabel rung: no-ff + gen3d-only
+[info] MOL created: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/pfas/TFA/pfas.mol (rung: no-ff + gen3d-only)
+[info] Creating CIF from MOL: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/pfas/TFA/pfas.cif
+[info] CIF created: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/pfas/TFA/pfas.cif (box = [15.0349 14.0499 15.0913])
+[info] Creating QE input: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/pfas/TFA/pfas.in
+[info] Patched QE input: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/pfas/TFA/pfas.in
+[info] Creating QE input: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/dft_cases/Hydroquinone_TFA/complex/complex.in
+[info] Patched QE input: /home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/dft_cases/Hydroquinone_TFA/complex/complex.in
+[run] mpirun -np 4 pw.x -in adsorbent.in (cwd=/home/hice1/ryu98/espresso/pfas-environment-cleanup/scripts/compounds/adsorbents/Hydroquinone)
+
+---------------------------------------
+Begin Slurm Epilog: Sep-22-2026 05:26:31
+Job ID:        5898244
+Array Job ID:  5898218_9
+User ID:       ryu98
+Account:       coc
+Job name:      pfas_screen
+Resources:     cpu=4,mem=192G,node=1
+Rsrc Used:     cput=03:31:52,vmem=0,walltime=00:52:58,mem=7821196K,energy_used=0
+Partition:     ice-cpu
+QOS:           coc-ice
+Nodes:         atl1-1-01-005-3-2
+---------------------------------------
