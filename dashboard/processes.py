@@ -91,6 +91,9 @@ def execute(
                 "NUMEXPR_NUM_THREADS": "1",
             },
         )
+        # Both streams are present because Popen was configured with PIPE.
+        assert process.stdout is not None
+        assert process.stderr is not None
         streams = [
             (process.stdout, out, bytearray()),
             (process.stderr, err, bytearray()),
